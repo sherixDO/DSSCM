@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+          http://www.springframework.org/schema/beans        http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/context      http://www.springframework.org/schema/context/spring-context.xsd
+          http://www.springframework.org/schema/tx           http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <!-- 扫描所有注解组件 -->
+    <context:component-scan base-package="cn.dsscm"/>
+
+    <!-- 读取数据库配置 -->
+    <context:property-placeholder location="classpath:database.properties"/>
+
+    <!-- 数据源：HikariCP -->
+    <bean id="dataSource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="jdbcUrl"         value="${jdbc.url}"/>
+        <property name="username"        value="${jdbc.username}"/>
+        <property name="password"        value="${jdbc.password}"/>
+        <!-- 其他池参数按需加 -->
+        <property name="maximumPoolSize" value="10"/>
+    </bean>
+
+    <!-- MyBatis SqlSessionFactory -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource"           ref="dataSource"/>
+        <property name="configLocation"       value="classpath:mybatis-config.xml"/>
+        <!-- Mapper XML 扫描 -->
+        <property name="mapperLocations"      value="classpath*:mapper/*.xml"/>
+    </bean>
+
+    <!-- Mapper 接口扫描 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="cn.dsscm.dao"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <!-- 事务管理 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+</beans>

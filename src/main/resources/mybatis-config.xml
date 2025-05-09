@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+    <!-- ① 全局设置（要放在 typeAliases 之前） -->
+    <settings>
+        <!-- user_name ⇄ userName 自动映射 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <!-- null 字段也调用 setter -->
+        <setting name="callSettersOnNulls" value="true"/>
+    </settings>
+
+    <!-- ② 别名：pojo 包下的类可直接用小写别名 -->
+    <typeAliases>
+        <package name="cn.dsscm.pojo"/>
+    </typeAliases>
+
+    <!-- ③ 插件：PageHelper -->
+    <plugins>
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <property name="helperDialect" value="mysql"/>
+            <property name="reasonable"    value="true"/>
+        </plugin>
+    </plugins>
+
+</configuration>
