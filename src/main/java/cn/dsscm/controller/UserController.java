@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -401,6 +402,55 @@ public class UserController extends BaseController {
             request.setAttribute(Constants.SYS_MESSAGE, "修改密码失败！");
         }
         return "pwdmodify";
+    }
+    @RequestMapping(value = "/updatePassword", method = RequestMethod.POST)
+    @ResponseBody
+    public Object updatePassword(@RequestParam("id") Integer id,
+                                 @RequestParam("password") String password,
+                                 HttpSession session) {
+        Map<String, String> resultMap = new HashMap<>();
+
+        // Log the received parameters
+        logger.info("updatePassword - Received ID: " + id + ", Password: " + password);
+
+        // Validate session
+        User user = (User) session.getAttribute(Constants.USER_SESSION);
+        if (user == null) {
+            logger.error("updatePassword - Session expired or user not logged in.");
+            resultMap.put("result", "sessionerror");
+            return resultMap;
+        }
+
+        // Check if the ID matches the logged-in user
+        if (!user.getId().equals(id)) {
+            logger.error("updatePassword - User ID mismatch. Logged-in user ID: " + user.getId());
+            resultMap.put("result", "id_mismatch");
+            return resultMap;
+        }
+
+        // Validate password
+        if (password == null || password.trim().isEmpty() || password.length() < 6) {
+            logger.error("updatePassword - Invalid password. Password must be at least 6 characters.");
+            resultMap.put("result", "password_invalid");
+            return resultMap;
+        }
+
+        // Attempt to update the password
+        try {
+            boolean isUpdated = userService.updatePwd(id, password);
+            if (isUpdated) {
+                logger.info("updatePassword - Password updated successfully for user ID: " + id);
+                resultMap.put("result", "success");
+            } else {
+                logger.error("updatePassword - Password update failed for user ID: " + id);
+                resultMap.put("result", "failure");
+            }
+        } catch (Exception e) {
+            logger.error("updatePassword - Exception occurred while updating password: ", e);
+            resultMap.put("result", "error");
+        }
+
+        return resultMap;
     }
 
 }

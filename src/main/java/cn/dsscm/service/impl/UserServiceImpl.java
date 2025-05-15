@@ -99,12 +99,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean updatePwd(Integer id, String pwd) throws Exception {
-        // TODO Auto-generated method stub
-        boolean flag = false;
-        if(userMapper.updatePwd(id, pwd) > 0)
-            flag = true;
-        return flag;
+    public boolean updatePwd(Integer id, String newPassword) throws Exception {
+        return userMapper.updatePwd(id, newPassword) > 0;
     }
 
 }
