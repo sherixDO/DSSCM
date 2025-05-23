@@ -9,12 +9,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b97c264f-4203-40e7-947b-23af07c32001" name="更改" comment="news page implementation">
+    <list default="true" id="b97c264f-4203-40e7-947b-23af07c32001" name="更改" comment="news page implementation and bug fixes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/cn/dsscm/controller/NewsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/dsscm/controller/NewsController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/cn/dsscm/service/impl/NewsServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/dsscm/service/impl/NewsServiceImpl.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jsp/newslist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jsp/newslist.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jsp/rollpage.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/webapp/WEB-INF/jsp/rollpage.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -210,7 +209,7 @@
       <workItem from="1747224933881" duration="4636000" />
       <workItem from="1747621040743" duration="9000" />
       <workItem from="1747832495573" duration="5676000" />
-      <workItem from="1747983101109" duration="6471000" />
+      <workItem from="1747983101109" duration="9457000" />
     </task>
     <task id="LOCAL-00001" summary="first commit">
       <option name="closed" value="true" />
@@ -236,7 +235,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747987639414</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="news page implementation and bug fixes">
+      <option name="closed" value="true" />
+      <created>1747989919550</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1747989919550</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -257,7 +264,8 @@
     <MESSAGE value="first commit" />
     <MESSAGE value="jsp pages update" />
     <MESSAGE value="news page implementation" />
-    <option name="LAST_COMMIT_MESSAGE" value="news page implementation" />
+    <MESSAGE value="news page implementation and bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="news page implementation and bug fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
