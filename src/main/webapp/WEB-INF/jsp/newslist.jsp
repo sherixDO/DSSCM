@@ -13,7 +13,7 @@
       <h4 class="title">新闻列表 <small> News List</small></h4>
     </div>
     <div class="content">
-      <form id="newsSearchForm" method="get" action="${pageContext.request.contextPath}/sys/news/list.html">
+      <form id="searchForm" method="get" action="${pageContext.request.contextPath}/sys/news/list.html">
         <input type="hidden" name="pageIndex" value="${pi.pageNum}"/> <%-- 添加隐藏的pageIndex字段，并从pi对象获取当前页码 --%>
         <div class="row">
           <div class="col-md-6 form-group">
