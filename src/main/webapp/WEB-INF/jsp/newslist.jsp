@@ -74,10 +74,8 @@
   $(".deleteNews").on("click", function(){
     var newsId = $(this).attr("newsId");
     if(confirm("确定要删除该新闻吗？")){
-      // 添加删除中的提示
       var $this = $(this);
       $this.html('<i class="ti-reload"></i> 删除中...').attr('disabled', true);
-      
       $.ajax({
         type: "GET",
         url: "${pageContext.request.contextPath}/sys/news/delete.json",

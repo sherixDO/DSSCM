@@ -111,26 +111,30 @@ public class NewsController {
         return "newsmodify";
     }
 
-    @GetMapping(value = "/delete.json")
+    /**
+     * 处理新闻删除请求
+     */
+    @RequestMapping(value = "/delete.json", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, String> deleteNews(@RequestParam("id") Integer id) {
-        logger.info("删除新闻请求，ID: " + id);
-        Map<String, String> resultMap = new HashMap<>();
-        
+    public Map<String, Object> deleteNews(@RequestParam Integer id) {
+        Map<String, Object> resultMap = new HashMap<>();
+        logger.info("开始处理新闻删除请求，ID: " + id);
+
         if (id == null) {
-            logger.error("删除新闻失败：ID为空");
+            logger.error("删除失败：ID为空");
             resultMap.put("delResult", "false");
             return resultMap;
         }
-        
+
         try {
             boolean result = newsService.deleteNewsById(id);
-            logger.info("删除新闻结果：" + (result ? "成功" : "失败") + "，ID: " + id);
+            logger.info("删除结果: " + result);
             resultMap.put("delResult", result ? "true" : "false");
         } catch (Exception e) {
-            logger.error("删除新闻异常，ID: " + id, e);
-            resultMap.put("delResult", "error");
+            logger.error("删除新闻时发生错误", e);
+            resultMap.put("delResult", "false");
         }
+
         return resultMap;
     }
 }
