@@ -14,7 +14,7 @@
 			<div class="col-md-12">
 				<div class="card card-plain">
 					<div class="content">
-						<form class="form-inline" method="post"
+						<form id="newsSearchForm" class="form-inline" method="post"
 							action="${pageContext.request.contextPath }/sys/bill/list.html">
 							<div class="row">
 								<div class="col-md-3">

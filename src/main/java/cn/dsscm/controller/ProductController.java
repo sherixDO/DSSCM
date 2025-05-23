@@ -66,7 +66,7 @@ public class ProductController {
             e.printStackTrace();
         }
 
-        model.addAttribute("pi", ppi);
+        model.addAttribute("pi", ppi);  // 统一使用"pi"作为分页对象名称
         model.addAttribute("pcList", pcList);
         model.addAttribute("queryName", queryName);
         model.addAttribute("categoryLevel1Id", categoryLevel1Id);
