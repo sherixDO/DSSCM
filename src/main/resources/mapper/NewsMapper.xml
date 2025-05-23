@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsscm.dao.NewsMapper">
+
+    <resultMap id="NewsResultMap" type="cn.dsscm.pojo.News">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="createdBy" column="createdBy"/>
+        <result property="creationDate" column="creationDate"/>
+        <result property="modifyBy" column="modifyBy"/>
+        <result property="modifyDate" column="modifyDate"/>
+    </resultMap>
+
+    <!-- 插入新闻记录 -->
+    <insert id="save" parameterType="cn.dsscm.pojo.News" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tb_news (title, content, createdBy, creationDate, modifyBy, modifyDate)
+        VALUES (#{title}, #{content}, #{createdBy}, #{creationDate}, #{modifyBy}, #{modifyDate})
+    </insert>
+
+    <!-- 更新新闻记录 -->
+    <update id="update" parameterType="cn.dsscm.pojo.News">
+        UPDATE tb_news
+        SET title = #{title},
+            content = #{content},
+            modifyBy = #{modifyBy},
+            modifyDate = #{modifyDate}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID删除新闻记录 -->
+    <delete id="delete" parameterType="java.lang.Long">
+        DELETE FROM tb_news WHERE id = #{id}
+    </delete>
+
+    <!-- 根据ID查询新闻记录 -->
+    <select id="findById" parameterType="java.lang.Long" resultMap="NewsResultMap">
+        SELECT id, title, content, createdBy, creationDate, modifyBy, modifyDate
+        FROM tb_news
+        WHERE id = #{id}
+    </select>
+
+    <!-- 查询所有新闻记录 -->
+    <select id="getAllNews" resultMap="NewsResultMap">
+        SELECT id, title, content, createdBy, creationDate, modifyBy, modifyDate FROM tb_news
+        <where>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%',#{title},'%')
+            </if>
+            <if test="userId != null">
+                AND createdBy = #{userId}
+            </if>
+        </where>
+        ORDER BY creationDate DESC
+    </select>
+
+    <!-- 查询新闻记录总数 -->
+    <select id="getNewsRowCount" resultType="long">
+        SELECT COUNT(1) FROM tb_news
+        <where>
+            <if test="title != null and title != ''">
+                AND title LIKE CONCAT('%',#{title},'%')
+            </if>
+            <if test="userId != null">
+                AND createdBy = #{userId}
+            </if>
+        </where>
+    </select>
+
+</mapper>

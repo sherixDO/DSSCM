@@ -80,10 +80,10 @@
 							<i class="ti-key"></i>
 							<p>用户权限</p> </a></li>
 
-					<li><a href="#"> <i class="ti-comments"></i>
-							<p>新闻管理</p> </a></li>
-					<li><a href="#"> <i class="ti-notepad"></i>
-							<p>信息查询</p> </a></li>
+					<li><a href="${pageContext.request.contextPath }/sys/news/list.html"> <i class="ti-comments"></i>
+						<p>新闻管理</p> </a></li>
+					<li><a href="${pageContext.request.contextPath }/sys/info/search.html"> <i class="ti-notepad"></i>
+						<p>信息查询</p> </a></li>
 					<li class="active-pro"><a
 						href="${pageContext.request.contextPath }/logout.html"> <i
 							class="ti-control-backward"></i>

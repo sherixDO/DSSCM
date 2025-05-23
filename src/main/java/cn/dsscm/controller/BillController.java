@@ -3,6 +3,7 @@ package cn.dsscm.controller;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -159,9 +160,9 @@ public class BillController extends BaseController {
 
     @RequestMapping(value = "/delbill.json", method = RequestMethod.GET)
     @ResponseBody
-    public Object delBill(@RequestParam String id) {
+    public Map<String, String> delBill(@RequestParam String id) { // 返回类型改为 Map<String, String>
         HashMap<String, String> resultMap = new HashMap<String, String>();
-        if (StringUtils.isNullOrEmpty(id)) {
+        if (id == null || id.isEmpty()) {
             resultMap.put("delResult", "notexist");
         } else {
             try {
@@ -170,16 +171,15 @@ public class BillController extends BaseController {
                 else
                     resultMap.put("delResult", "false");
             } catch (NumberFormatException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("Error parsing bill ID for deletion: " + id, e); // 记录错误
+                resultMap.put("delResult", "error_parse");
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("Error deleting bill with ID: " + id, e); // 记录错误
+                resultMap.put("delResult", "error_db");
             }
         }
-        return JSONArray.toJSONString(resultMap);
+        return resultMap;
     }
-
     @RequestMapping(value = "/view/{id}", method = RequestMethod.GET)
     public String view(@PathVariable String id, Model model,
                        HttpServletRequest request) {
