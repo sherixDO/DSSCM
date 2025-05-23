@@ -38,6 +38,7 @@ public class NewsController {
             logger.error("getNewsList error", e);
         }
         model.addAttribute("pageInfo", pageInfo);
+        model.addAttribute("pi", pageInfo); // 添加这一行，使得rollpage.jsp可以访问到pi对象
         model.addAttribute("queryTitle", queryTitle);
         return "newslist";
     }
