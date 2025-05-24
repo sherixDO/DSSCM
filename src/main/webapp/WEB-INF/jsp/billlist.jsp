@@ -14,7 +14,7 @@
 			<div class="col-md-12">
 				<div class="card card-plain">
 					<div class="content">
-						<form id="newsSearchForm" class="form-inline" method="post"
+						<form id="searchForm" class="form-inline" method="post"
 							action="${pageContext.request.contextPath }/sys/bill/list.html">
 							<div class="row">
 								<div class="col-md-3">
@@ -127,3 +127,4 @@
 </script>
 <script type="text/javascript"
 	src="${pageContext.request.contextPath }/statics/js/billlist.js"></script>
+
