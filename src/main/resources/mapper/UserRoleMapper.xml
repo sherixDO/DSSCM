@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.dsscm.dao.UserRoleMapper">
+
+    <insert id="assignRole">
+        INSERT INTO user_role (userId, roleId)
+        VALUES (#{userId}, #{roleId})
+    </insert>
+
+    <select id="getRolesByUserId" resultType="cn.dsscm.pojo.Role">
+        SELECT r.id, r.roleName
+        FROM role r
+                 JOIN user_role ur ON r.id = ur.roleId
+        WHERE ur.userId = #{userId}
+    </select>
+
+    <delete id="deleteRolesByUserId">
+        DELETE FROM user_role WHERE userId = #{userId}
+    </delete>
+
+</mapper>
