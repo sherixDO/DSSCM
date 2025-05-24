@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import cn.dsscm.service.UserRoleService;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
@@ -452,5 +453,26 @@ public class UserController extends BaseController {
 
         return resultMap;
     }
+    @Resource
+    private UserRoleService userRoleService;
 
+    @RequestMapping("/user/toAssignRole")
+    public String toAssignRole(@RequestParam("id") Integer userId, Model model) throws Exception {
+        List<Role> allRoles = roleService.getRoleList(); // 所有可选角色
+        List<Role> userRoles = userRoleService.getUserRoles(userId); // 用户已有角色
+
+        model.addAttribute("userId", userId);
+        model.addAttribute("allRoles", allRoles);
+        model.addAttribute("userRoles", userRoles);
+
+        return "user/assignRole"; // JSP 页面路径
+    }
+
+    @RequestMapping("/user/assignRole")
+    public String assignRole(@RequestParam("userId") Integer userId,
+                             @RequestParam("roleId") Integer roleId) throws Exception {
+        userRoleService.deleteRolesByUserId(userId); // 清空旧角色
+        userRoleService.assignRole(userId, roleId);  // 重新赋值
+        return "redirect:/user/list";
+    }
 }
