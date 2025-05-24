@@ -82,8 +82,12 @@
 
 					<li><a href="${pageContext.request.contextPath }/sys/news/list.html"> <i class="ti-comments"></i>
 						<p>新闻管理</p> </a></li>
-					<li><a href="${pageContext.request.contextPath }/sys/info/search.html"> <i class="ti-notepad"></i>
-						<p>信息查询</p> </a></li>
+						<li id="billMenu">
+							<a href="javascript:window.open('https://chat.deepseek.com', '_blank');">
+								<i class="ti-search"></i>
+								<p>信息查询</p>
+							</a>
+						</li>
 					<li class="active-pro"><a
 						href="${pageContext.request.contextPath }/logout.html"> <i
 							class="ti-control-backward"></i>
@@ -142,3 +146,4 @@
 				value="${pageContext.request.contextPath }" /> <input type="hidden"
 				id="referer" name="referer"
 				value="<%=request.getHeader("Referer")%>" />
+
