@@ -6,9 +6,9 @@
 		<nav class="pull-left">
 			<ul>
 
-				<li><a href="#"> AAA </a></li>
-				<li><a href="#"> BBB </a></li>
-				<li><a href="#"> CCC </a></li>
+				<li><a href="${pageContext.request.contextPath}/sys/order/list.html"> 全部 </a></li>
+				<li><a href="${pageContext.request.contextPath}/sys/order/list.html?status=1"> 待审核 </a></li>
+				<li><a href="${pageContext.request.contextPath}/sys/order/list.html?status=2"> 已审核 </a></li>
 			</ul>
 		</nav>
 		<div class="copyright pull-right">Copyright &copy; 2020. 百货中心供应链管理系统.</div>

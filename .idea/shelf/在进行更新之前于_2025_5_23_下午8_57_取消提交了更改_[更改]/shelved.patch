@@ -1,0 +1,238 @@
+Index: src/main/java/cn/dsscm/controller/ProviderController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package cn.dsscm.controller;\r\n\r\nimport java.io.File;\r\nimport java.util.Date;\r\nimport java.util.HashMap;\r\nimport java.util.List;\r\n\r\nimport javax.annotation.Resource;\r\nimport javax.servlet.http.HttpServletRequest;\r\nimport javax.servlet.http.HttpSession;\r\n\r\nimport org.apache.commons.io.FilenameUtils;\r\nimport org.apache.commons.lang.math.RandomUtils;\r\nimport org.apache.log4j.Logger;\r\nimport org.springframework.stereotype.Controller;\r\nimport org.springframework.ui.Model;\r\nimport org.springframework.web.bind.annotation.ModelAttribute;\r\nimport org.springframework.web.bind.annotation.PathVariable;\r\nimport org.springframework.web.bind.annotation.RequestMapping;\r\nimport org.springframework.web.bind.annotation.RequestMethod;\r\nimport org.springframework.web.bind.annotation.RequestParam;\r\nimport org.springframework.web.bind.annotation.ResponseBody;\r\nimport org.springframework.web.multipart.MultipartFile;\r\n\r\nimport cn.dsscm.pojo.Provider;\r\nimport cn.dsscm.pojo.User;\r\nimport cn.dsscm.service.ProviderService;\r\nimport cn.dsscm.tools.Constants;\r\n\r\nimport com.alibaba.fastjson.JSONArray;\r\nimport com.github.pagehelper.PageInfo;\r\nimport com.mysql.jdbc.StringUtils;\r\n\r\n@Controller\r\n@RequestMapping(\"/sys/provider\")\r\npublic class ProviderController extends BaseController {\r\n\r\n    private Logger logger = Logger.getLogger(ProviderController.class);\r\n\r\n    @Resource\r\n    private ProviderService providerService;\r\n\r\n    @RequestMapping(value = \"/list.html\")\r\n    public String getProviderList(\r\n            Model model,\r\n            @RequestParam(value = \"queryProCode\", required = false) String queryProCode,\r\n            @RequestParam(value = \"queryProName\", required = false) String queryProName,\r\n            @RequestParam(value = \"pageIndex\", required = false) String pageIndex) {\r\n        logger.info(\"getProviderList ---- > queryProCode: \" + queryProCode);\r\n        logger.info(\"getProviderList ---- > queryProName: \" + queryProName);\r\n        logger.info(\"getProviderList ---- > pageIndex: \" + pageIndex);\r\n        PageInfo<Provider> pi = null;\r\n        // 设置页面容量\r\n        int pageSize = Constants.pageSize;\r\n        // 当前页码\r\n        int currentPageNo = 1;\r\n\r\n        if (queryProCode == null) {\r\n            queryProCode = \"\";\r\n        }\r\n        if (queryProName == null) {\r\n            queryProName = \"\";\r\n        }\r\n        if (pageIndex != null) {\r\n            try {\r\n                currentPageNo = Integer.valueOf(pageIndex);\r\n            } catch (NumberFormatException e) {\r\n                return \"redirect:/sys/provider/syserror.html\";\r\n            }\r\n        }\r\n        try {\r\n            pi = providerService.getProviderList(queryProName,queryProCode,currentPageNo,pageSize);\r\n            for (Provider p : pi.getList()) {\r\n                System.out.println(\"---p ----\"+p);\r\n            }\r\n        } catch (Exception e) {\r\n            // TODO Auto-generated catch block\r\n            e.printStackTrace();\r\n        }\r\n        model.addAttribute(\"pi\", pi);\r\n        model.addAttribute(\"queryProCode\", queryProCode);\r\n        model.addAttribute(\"queryProName\", queryProName);\r\n        model.addAttribute(\"currentPageNo\", currentPageNo);\r\n        return \"providerlist\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/syserror.html\")\r\n    public String sysError() {\r\n        return \"syserror\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/add.html\", method = RequestMethod.GET)\r\n    public String add(@ModelAttribute(\"provider\") Provider provider) {\r\n        return \"provideradd\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/view/{id}\", method = RequestMethod.GET)\r\n    public String view(@PathVariable String id, Model model,\r\n                       HttpServletRequest request) {\r\n        logger.debug(\"view id===================== \" + id);\r\n        Provider provider = new Provider();\r\n        try {\r\n            provider = providerService.getProviderById(Integer.parseInt(id));\r\n        } catch (NumberFormatException e) {\r\n            e.printStackTrace();\r\n        } catch (Exception e) {\r\n            e.printStackTrace();\r\n        }\r\n\r\n        if (provider.getCompanyLicPicPath() != null\r\n                && !\"\".equals(provider.getCompanyLicPicPath())) {\r\n            String[] paths = provider.getCompanyLicPicPath().split(\r\n                    \"\\\\\" + File.separator);\r\n            logger.debug(\"view companyLicPicPath paths[paths.length-1]============ \"\r\n                    + paths[paths.length - 1]);\r\n            provider.setCompanyLicPicPath(request.getContextPath()\r\n                    + \"/statics/uploadfiles/\" + paths[paths.length - 1]);\r\n        }\r\n        if (provider.getOrgCodePicPath() != null\r\n                && !\"\".equals(provider.getOrgCodePicPath())) {\r\n            String[] paths = provider.getOrgCodePicPath().split(\r\n                    \"\\\\\" + File.separator);\r\n            logger.debug(\"view orgCodePicPath paths[paths.length-1]============ \"\r\n                    + paths[paths.length - 1]);\r\n            provider.setOrgCodePicPath(request.getContextPath()\r\n                    + \"/statics/uploadfiles/\" + paths[paths.length - 1]);\r\n        }\r\n\r\n        model.addAttribute(provider);\r\n        return \"providerview\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/modify/{id}\", method = RequestMethod.GET)\r\n    public String getProviderById(@PathVariable String id, Model model,\r\n                                  HttpServletRequest request) {\r\n        logger.debug(\"getProviderById id===================== \" + id);\r\n        Provider provider = new Provider();\r\n        try {\r\n            provider = providerService.getProviderById(Integer.parseInt(id));\r\n            if (provider.getCompanyLicPicPath() != null\r\n                    && !\"\".equals(provider.getCompanyLicPicPath())) {\r\n                String[] paths = provider.getCompanyLicPicPath().split(\r\n                        \"\\\\\" + File.separator);\r\n                logger.debug(\"view companyLicPicPath paths[paths.length-1]============ \"\r\n                        + paths[paths.length - 1]);\r\n                provider.setCompanyLicPicPath(request.getContextPath()\r\n                        + \"/statics/uploadfiles/\" + paths[paths.length - 1]);\r\n            }\r\n            if (provider.getOrgCodePicPath() != null\r\n                    && !\"\".equals(provider.getOrgCodePicPath())) {\r\n                String[] paths = provider.getOrgCodePicPath().split(\r\n                        \"\\\\\" + File.separator);\r\n                logger.debug(\"view orgCodePicPath paths[paths.length-1]============ \"\r\n                        + paths[paths.length - 1]);\r\n                provider.setOrgCodePicPath(request.getContextPath()\r\n                        + \"/statics/uploadfiles/\" + paths[paths.length - 1]);\r\n            }\r\n        } catch (NumberFormatException e) {\r\n            // TODO Auto-generated catch block\r\n            e.printStackTrace();\r\n        } catch (Exception e) {\r\n            // TODO Auto-generated catch block\r\n            e.printStackTrace();\r\n        }\r\n        model.addAttribute(provider);\r\n        return \"providermodify\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/modifysave.html\", method = RequestMethod.POST)\r\n    public String modifyProviderSave(\r\n            Provider provider,\r\n            HttpSession session,\r\n            HttpServletRequest request,\r\n            @RequestParam(value = \"attachs\", required = false) MultipartFile[] attachs) {\r\n        logger.debug(\"modifyProviderSave id===================== \"\r\n                + provider.getId());\r\n        String companyLicPicPath = null;\r\n        String orgCodePicPath = null;\r\n        String errorInfo = null;\r\n        boolean flag = true;\r\n        String path = request.getSession().getServletContext()\r\n                .getRealPath(\"statics\" + File.separator + \"uploadfiles\");\r\n        logger.info(\"uploadFile path ============== > \" + path);\r\n        if (attachs != null) {\r\n            for (int i = 0; i < attachs.length; i++) {\r\n                MultipartFile attach = attachs[i];\r\n                if (!attach.isEmpty()) {\r\n                    if (i == 0) {\r\n                        errorInfo = \"uploadFileError\";\r\n                    } else if (i == 1) {\r\n                        errorInfo = \"uploadOcError\";\r\n                    }\r\n                    String oldFileName = attach.getOriginalFilename();// 原文件名\r\n                    String prefix = FilenameUtils.getExtension(oldFileName);// 原文件后缀\r\n                    int filesize = 500000;\r\n                    if (attach.getSize() > filesize) {// 上传大小不得超过 500k\r\n                        request.setAttribute(errorInfo, \" * 上传大小不得超过 500k\");\r\n                        flag = false;\r\n                    } else if (prefix.equalsIgnoreCase(\"jpg\")\r\n                            || prefix.equalsIgnoreCase(\"png\")\r\n                            || prefix.equalsIgnoreCase(\"jpeg\")\r\n                            || prefix.equalsIgnoreCase(\"pneg\")) {// 上传图片格式不正确\r\n                        String fileName = System.currentTimeMillis()\r\n                                + RandomUtils.nextInt(1000000)\r\n                                + \"_Personal.jpg\";\r\n                        logger.debug(\"new fileName======== \" + attach.getName());\r\n                        File targetFile = new File(path, fileName);\r\n                        if (!targetFile.exists()) {\r\n                            targetFile.mkdirs();\r\n                        }\r\n                        // 保存\r\n                        try {\r\n                            attach.transferTo(targetFile);\r\n                        } catch (Exception e) {\r\n                            e.printStackTrace();\r\n                            request.setAttribute(errorInfo, \" * 上传失败！\");\r\n                            flag = false;\r\n                        }\r\n                        if (i == 0) {\r\n                            companyLicPicPath = path + File.separator\r\n                                    + fileName;\r\n                        } else if (i == 1) {\r\n                            orgCodePicPath = path + File.separator + fileName;\r\n                        }\r\n                        logger.debug(\"companyLicPicPath: \" + companyLicPicPath);\r\n                        logger.debug(\"orgCodePicPath: \" + orgCodePicPath);\r\n\r\n                    } else {\r\n                        request.setAttribute(errorInfo, \" * 上传图片格式不正确\");\r\n                        flag = false;\r\n                    }\r\n                }\r\n            }\r\n        }\r\n        if (flag) {\r\n            provider.setModifyBy(((User) session\r\n                    .getAttribute(Constants.USER_SESSION)).getId());\r\n            provider.setModifyDate(new Date());\r\n            provider.setCompanyLicPicPath(companyLicPicPath);\r\n            provider.setOrgCodePicPath(orgCodePicPath);\r\n            try {\r\n                if (providerService.modify(provider)) {\r\n                    return \"redirect:/sys/provider/list.html\";\r\n                }\r\n            } catch (Exception e) {\r\n                // TODO Auto-generated catch block\r\n                e.printStackTrace();\r\n            }\r\n        }\r\n        return \"providermodify\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/addsave.html\", method = RequestMethod.POST)\r\n    public String addProviderSave(\r\n            Provider provider,\r\n            HttpSession session,\r\n            HttpServletRequest request,\r\n            @RequestParam(value = \"attachs\", required = false) MultipartFile[] attachs) {\r\n        String companyLicPicPath = null;\r\n        String orgCodePicPath = null;\r\n        String errorInfo = null;\r\n        boolean flag = true;\r\n        String path = request.getSession().getServletContext()\r\n                .getRealPath(\"statics\" + File.separator + \"uploadfiles\");\r\n        logger.info(\"uploadFile path ============== > \" + path);\r\n        for (int i = 0; i < attachs.length; i++) {\r\n            MultipartFile attach = attachs[i];\r\n            if (!attach.isEmpty()) {\r\n                if (i == 0) {\r\n                    errorInfo = \"uploadFileError\";\r\n                } else if (i == 1) {\r\n                    errorInfo = \"uploadOcError\";\r\n                }\r\n                String oldFileName = attach.getOriginalFilename();// 原文件名\r\n                String prefix = FilenameUtils.getExtension(oldFileName);// 原文件后缀\r\n                int filesize = 500000;\r\n                if (attach.getSize() > filesize) {// 上传大小不得超过 500k\r\n                    request.setAttribute(errorInfo, \" * 上传大小不得超过 500k\");\r\n                    flag = false;\r\n                } else if (prefix.equalsIgnoreCase(\"jpg\")\r\n                        || prefix.equalsIgnoreCase(\"png\")\r\n                        || prefix.equalsIgnoreCase(\"jpeg\")\r\n                        || prefix.equalsIgnoreCase(\"pneg\")) {// 上传图片格式不正确\r\n                    String fileName = System.currentTimeMillis()\r\n                            + RandomUtils.nextInt(1000000) + \"_Personal.jpg\";\r\n                    logger.debug(\"new fileName======== \" + attach.getName());\r\n                    File targetFile = new File(path, fileName);\r\n                    if (!targetFile.exists()) {\r\n                        targetFile.mkdirs();\r\n                    }\r\n                    // 保存\r\n                    try {\r\n                        attach.transferTo(targetFile);\r\n                    } catch (Exception e) {\r\n                        e.printStackTrace();\r\n                        request.setAttribute(errorInfo, \" * 上传失败！\");\r\n                        flag = false;\r\n                    }\r\n                    if (i == 0) {\r\n                        companyLicPicPath = path + File.separator + fileName;\r\n                    } else if (i == 1) {\r\n                        orgCodePicPath = path + File.separator + fileName;\r\n                    }\r\n                    logger.debug(\"companyLicPicPath: \" + companyLicPicPath);\r\n                    logger.debug(\"orgCodePicPath: \" + orgCodePicPath);\r\n\r\n                } else {\r\n                    request.setAttribute(errorInfo, \" * 上传图片格式不正确\");\r\n                    flag = false;\r\n                }\r\n            }\r\n        }\r\n        if (flag) {\r\n            provider.setCreatedBy(((User) session\r\n                    .getAttribute(Constants.USER_SESSION)).getId());\r\n            provider.setCreationDate(new Date());\r\n            provider.setCompanyLicPicPath(companyLicPicPath);\r\n            provider.setOrgCodePicPath(orgCodePicPath);\r\n            try {\r\n                if (providerService.add(provider)) {\r\n                    return \"redirect:/sys/provider/list.html\";\r\n                }\r\n            } catch (Exception e) {\r\n                // TODO Auto-generated catch block\r\n                e.printStackTrace();\r\n            }\r\n        }\r\n        return \"provideradd\";\r\n    }\r\n\r\n    @RequestMapping(value = \"/del.json\", method = RequestMethod.POST)\r\n    @ResponseBody\r\n    public Object delProviderById(@RequestParam(value = \"proid\") String id) {\r\n        logger.debug(\"delProviderById proid ===================== \" + id);\r\n        HashMap<String, String> resultMap = new HashMap<String, String>();\r\n        if (!StringUtils.isNullOrEmpty(id)) {\r\n            boolean flag = false;\r\n            try {\r\n                flag = providerService.smbmsdeleteProviderById(Integer\r\n                        .parseInt(id));\r\n            } catch (NumberFormatException e) {\r\n                // TODO Auto-generated catch block\r\n                e.printStackTrace();\r\n            } catch (Exception e) {\r\n                // TODO Auto-generated catch block\r\n                e.printStackTrace();\r\n            }\r\n            if (flag) {// 删除成功\r\n                resultMap.put(\"delResult\", \"true\");\r\n            } else {// 删除失败\r\n                resultMap.put(\"delResult\", \"false\");\r\n            }\r\n        } else {\r\n            resultMap.put(\"delResult\", \"notexit\");\r\n        }\r\n        return JSONArray.toJSONString(resultMap);\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/cn/dsscm/controller/ProviderController.java b/src/main/java/cn/dsscm/controller/ProviderController.java
+--- a/src/main/java/cn/dsscm/controller/ProviderController.java	(revision ac8e10509f8f575f9fb9e9eadb987f637f6670ef)
++++ b/src/main/java/cn/dsscm/controller/ProviderController.java	(date 1747361885546)
+@@ -12,6 +12,7 @@
+ import org.apache.commons.io.FilenameUtils;
+ import org.apache.commons.lang.math.RandomUtils;
+ import org.apache.log4j.Logger;
++import org.springframework.http.ResponseEntity;
+ import org.springframework.stereotype.Controller;
+ import org.springframework.ui.Model;
+ import org.springframework.web.bind.annotation.ModelAttribute;
+@@ -69,7 +70,7 @@
+             }
+         }
+         try {
+-            pi = providerService.getProviderList(queryProName,queryProCode,currentPageNo,pageSize);
++            pi = providerService.getProviderList(queryProName, queryProCode, currentPageNo, pageSize);
+             for (Provider p : pi.getList()) {
+                 System.out.println("---p ----"+p);
+             }
+Index: .idea/misc.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ProjectRootManager\" version=\"2\" languageLevel=\"JDK_17\" default=\"true\" project-jdk-name=\"corretto-17\" project-jdk-type=\"JavaSDK\">\r\n    <output url=\"file://$PROJECT_DIR$/out\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/misc.xml b/.idea/misc.xml
+--- a/.idea/misc.xml	(revision ac8e10509f8f575f9fb9e9eadb987f637f6670ef)
++++ b/.idea/misc.xml	(date 1747223625264)
+@@ -1,5 +1,13 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
++  <component name="ExternalStorageConfigurationManager" enabled="true" />
++  <component name="MavenProjectsManager">
++    <option name="originalFiles">
++      <list>
++        <option value="$PROJECT_DIR$/pom.xml" />
++      </list>
++    </option>
++  </component>
+   <component name="ProjectRootManager" version="2" languageLevel="JDK_17" default="true" project-jdk-name="corretto-17" project-jdk-type="JavaSDK">
+     <output url="file://$PROJECT_DIR$/out" />
+   </component>
+Index: src/main/resources/database.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>jdbc.driver=com.mysql.jdbc.Driver\r\njdbc.url=jdbc:mysql://localhost:3306/dsscm?useUnicode=true&characterEncoding=utf8\r\njdbc.username=root\r\njdbc.password=picato326..\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/src/main/resources/database.properties b/src/main/resources/database.properties
+--- a/src/main/resources/database.properties	(revision ac8e10509f8f575f9fb9e9eadb987f637f6670ef)
++++ b/src/main/resources/database.properties	(date 1747223870121)
+@@ -1,4 +1,4 @@
+ jdbc.driver=com.mysql.jdbc.Driver
+ jdbc.url=jdbc:mysql://localhost:3306/dsscm?useUnicode=true&characterEncoding=utf8
+ jdbc.username=root
+-jdbc.password=picato326..
++jdbc.password=lwq20040228LWQ
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"ArtifactsWorkspaceSettings\">\r\n    <artifacts-to-build>\r\n      <artifact name=\"DSSCM:war\" />\r\n    </artifacts-to-build>\r\n  </component>\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"b97c264f-4203-40e7-947b-23af07c32001\" name=\"更改\" comment=\"first commit\">\r\n      <change afterPath=\"$PROJECT_DIR$/.idea/encodings.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.gitignore\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.gitignore\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/misc.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/misc.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/pom.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/pom.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/src/main/resources/database.properties\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/resources/database.properties\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"PREVIOUS_COMMIT_AUTHORS\">\r\n      <list>\r\n        <option value=\"sherixDO &lt;sheri12345@foxmail.com&gt;\" />\r\n      </list>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\r\n    <option name=\"SIGN_OFF_COMMIT\" value=\"true\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;sherixDO&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/sherixDO/DSSCM.git&quot;,\r\n    &quot;accountId&quot;: &quot;592d31b1-f690-4af4-8771-7d74094642f1&quot;\r\n  }\r\n}</component>\r\n  <component name=\"KubernetesApiPersistence\"><![CDATA[{}]]></component>\r\n  <component name=\"KubernetesApiProvider\"><![CDATA[{\r\n  \"isMigrated\": true\r\n}]]></component>\r\n  <component name=\"LogFilters\">\r\n    <option name=\"FILTER_ERRORS\" value=\"false\" />\r\n    <option name=\"FILTER_WARNINGS\" value=\"false\" />\r\n    <option name=\"FILTER_INFO\" value=\"true\" />\r\n    <option name=\"FILTER_DEBUG\" value=\"true\" />\r\n    <option name=\"CUSTOM_FILTER\" />\r\n  </component>\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;associatedIndex&quot;: 7\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"2wqD988Z9YMo5jDoFKDg4Ap3yOz\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\"><![CDATA[{\r\n  \"keyToString\": {\r\n    \"RunOnceActivity.ShowReadmeOnStart\": \"true\",\r\n    \"SHARE_PROJECT_CONFIGURATION_FILES\": \"true\",\r\n    \"Tomcat 服务器.Tomcat 8.5.100.executor\": \"Run\",\r\n    \"git-widget-placeholder\": \"main\",\r\n    \"kotlin-language-version-configured\": \"true\",\r\n    \"node.js.detected.package.eslint\": \"true\",\r\n    \"node.js.detected.package.tslint\": \"true\",\r\n    \"node.js.selected.package.eslint\": \"(autodetect)\",\r\n    \"node.js.selected.package.tslint\": \"(autodetect)\",\r\n    \"nodejs_package_manager_path\": \"npm\",\r\n    \"project.structure.last.edited\": \"工件\",\r\n    \"project.structure.proportion\": \"0.15\",\r\n    \"project.structure.side.proportion\": \"0.2\",\r\n    \"settings.editor.selected.configurable\": \"reference.settings.project.maven.importing\",\r\n    \"vue.rearranger.settings.migration\": \"true\"\r\n  }\r\n}]]></component>\r\n  <component name=\"RunManager\">\r\n    <configuration name=\"Tomcat 8.5.100\" type=\"#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory\" factoryName=\"Local\" APPLICATION_SERVER_NAME=\"Tomcat 8.5.100\" ALTERNATIVE_JRE_ENABLED=\"true\" ALTERNATIVE_JRE_PATH=\"corretto-1.8\" nameIsGenerated=\"true\">\r\n      <option name=\"UPDATING_POLICY\" value=\"restart-server\" />\r\n      <deployment>\r\n        <artifact name=\"DSSCM:war\">\r\n          <settings>\r\n            <option name=\"CONTEXT_PATH\" value=\"/DSSCM_war\" />\r\n          </settings>\r\n        </artifact>\r\n      </deployment>\r\n      <server-settings>\r\n        <option name=\"BASE_DIRECTORY_NAME\" value=\"43092132-be4b-4068-8b41-7d5da9af1642\" />\r\n      </server-settings>\r\n      <predefined_log_file enabled=\"true\" id=\"Tomcat\" />\r\n      <predefined_log_file enabled=\"true\" id=\"Tomcat Catalina\" />\r\n      <predefined_log_file id=\"Tomcat Manager\" />\r\n      <predefined_log_file id=\"Tomcat Host Manager\" />\r\n      <predefined_log_file id=\"Tomcat Localhost Access\" />\r\n      <RunnerSettings RunnerId=\"Debug\">\r\n        <option name=\"DEBUG_PORT\" value=\"56492\" />\r\n      </RunnerSettings>\r\n      <ConfigurationWrapper VM_VAR=\"JAVA_OPTS\" RunnerId=\"Cover\">\r\n        <option name=\"USE_ENV_VARIABLES\" value=\"true\" />\r\n        <STARTUP>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </STARTUP>\r\n        <SHUTDOWN>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </SHUTDOWN>\r\n      </ConfigurationWrapper>\r\n      <ConfigurationWrapper VM_VAR=\"JAVA_OPTS\" RunnerId=\"Debug\">\r\n        <option name=\"USE_ENV_VARIABLES\" value=\"true\" />\r\n        <STARTUP>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </STARTUP>\r\n        <SHUTDOWN>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </SHUTDOWN>\r\n      </ConfigurationWrapper>\r\n      <ConfigurationWrapper VM_VAR=\"JAVA_OPTS\" RunnerId=\"Profile\">\r\n        <option name=\"USE_ENV_VARIABLES\" value=\"true\" />\r\n        <STARTUP>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </STARTUP>\r\n        <SHUTDOWN>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </SHUTDOWN>\r\n      </ConfigurationWrapper>\r\n      <ConfigurationWrapper VM_VAR=\"JAVA_OPTS\" RunnerId=\"Run\">\r\n        <option name=\"USE_ENV_VARIABLES\" value=\"true\" />\r\n        <STARTUP>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </STARTUP>\r\n        <SHUTDOWN>\r\n          <option name=\"USE_DEFAULT\" value=\"true\" />\r\n          <option name=\"SCRIPT\" value=\"\" />\r\n          <option name=\"VM_PARAMETERS\" value=\"\" />\r\n          <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n        </SHUTDOWN>\r\n      </ConfigurationWrapper>\r\n      <method v=\"2\">\r\n        <option name=\"Make\" enabled=\"true\" />\r\n        <option name=\"BuildArtifacts\" enabled=\"true\">\r\n          <artifact name=\"DSSCM:war\" />\r\n        </option>\r\n      </method>\r\n    </configuration>\r\n  </component>\r\n  <component name=\"SharedIndexes\">\r\n    <attachedChunks>\r\n      <set>\r\n        <option value=\"bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11\" />\r\n        <option value=\"bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11\" />\r\n      </set>\r\n    </attachedChunks>\r\n  </component>\r\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"应用程序级\" UseSingleDictionary=\"true\" transferred=\"true\" />\r\n  <component name=\"TaskManager\">\r\n    <task active=\"true\" id=\"Default\" summary=\"默认任务\">\r\n      <changelist id=\"b97c264f-4203-40e7-947b-23af07c32001\" name=\"更改\" comment=\"\" />\r\n      <created>1746760056917</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1746760056917</updated>\r\n      <workItem from=\"1746760057995\" duration=\"426000\" />\r\n      <workItem from=\"1746760493423\" duration=\"252000\" />\r\n      <workItem from=\"1746760753354\" duration=\"219000\" />\r\n      <workItem from=\"1746760979658\" duration=\"263000\" />\r\n      <workItem from=\"1746761251159\" duration=\"582000\" />\r\n      <workItem from=\"1746761843786\" duration=\"5763000\" />\r\n    </task>\r\n    <task id=\"LOCAL-00001\" summary=\"first commit\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1746760359645</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1746760359645</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"2\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"Vcs.Log.Tabs.Properties\">\r\n    <option name=\"TAB_STATES\">\r\n      <map>\r\n        <entry key=\"MAIN\">\r\n          <value>\r\n            <State />\r\n          </value>\r\n        </entry>\r\n      </map>\r\n    </option>\r\n  </component>\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <MESSAGE value=\"first commit\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"first commit\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision ac8e10509f8f575f9fb9e9eadb987f637f6670ef)
++++ b/.idea/workspace.xml	(date 1748005017496)
+@@ -2,7 +2,7 @@
+ <project version="4">
+   <component name="ArtifactsWorkspaceSettings">
+     <artifacts-to-build>
+-      <artifact name="DSSCM:war" />
++      <artifact name="SSM_Project:war" />
+     </artifacts-to-build>
+   </component>
+   <component name="AutoImportSettings">
+@@ -10,16 +10,20 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="b97c264f-4203-40e7-947b-23af07c32001" name="更改" comment="first commit">
++      <change afterPath="$PROJECT_DIR$/.idea/.gitignore" afterDir="false" />
+       <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/src/main/java/cn/dsscm/controller/ProviderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/cn/dsscm/controller/ProviderController.java" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/main/resources/database.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/database.properties" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+     <option name="LAST_RESOLUTION" value="IGNORE" />
++  </component>
++  <component name="ExportToHTMLSettings">
++    <option name="OUTPUT_DIRECTORY" value="$PROJECT_DIR$/../DSSCM\exportToHTML" />
+   </component>
+   <component name="Git.Settings">
+     <option name="PREVIOUS_COMMIT_AUTHORS">
+@@ -39,13 +43,13 @@
+   <component name="GithubPullRequestsUISettings">{
+   &quot;selectedUrlAndAccountId&quot;: {
+     &quot;url&quot;: &quot;https://github.com/sherixDO/DSSCM.git&quot;,
+-    &quot;accountId&quot;: &quot;592d31b1-f690-4af4-8771-7d74094642f1&quot;
++    &quot;accountId&quot;: &quot;c1c67287-5630-4746-bcf3-0f2afe2c9171&quot;
+   }
+ }</component>
+-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
+-  <component name="KubernetesApiProvider"><![CDATA[{
+-  "isMigrated": true
+-}]]></component>
++  <component name="KubernetesApiPersistence">{}</component>
++  <component name="KubernetesApiProvider">{
++  &quot;isMigrated&quot;: true
++}</component>
+   <component name="LogFilters">
+     <option name="FILTER_ERRORS" value="false" />
+     <option name="FILTER_WARNINGS" value="false" />
+@@ -66,27 +70,35 @@
+     "RunOnceActivity.ShowReadmeOnStart": "true",
+     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+     "Tomcat 服务器.Tomcat 8.5.100.executor": "Run",
++    "Tomcat 服务器.Tomcat 9.0.104.executor": "Run",
+     "git-widget-placeholder": "main",
+     "kotlin-language-version-configured": "true",
++    "last_opened_file_path": "C:/Users/娄万卿/Desktop/DSSCM/DSSCM",
+     "node.js.detected.package.eslint": "true",
+     "node.js.detected.package.tslint": "true",
+     "node.js.selected.package.eslint": "(autodetect)",
+     "node.js.selected.package.tslint": "(autodetect)",
+     "nodejs_package_manager_path": "npm",
+-    "project.structure.last.edited": "工件",
++    "project.structure.last.edited": "模块",
+     "project.structure.proportion": "0.15",
+     "project.structure.side.proportion": "0.2",
+-    "settings.editor.selected.configurable": "reference.settings.project.maven.importing",
++    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable",
+     "vue.rearranger.settings.migration": "true"
++  },
++  "keyToStringList": {
++    "DatabaseDriversLRU": [
++      "mysql_aurora_aws",
++      "mysql"
++    ]
+   }
+ }]]></component>
+   <component name="RunManager">
+-    <configuration name="Tomcat 8.5.100" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 8.5.100" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="corretto-1.8" nameIsGenerated="true">
++    <configuration name="Tomcat 9.0.104" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 9.0.104" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="corretto-1.8" nameIsGenerated="true">
+       <option name="UPDATING_POLICY" value="restart-server" />
+       <deployment>
+-        <artifact name="DSSCM:war">
++        <artifact name="SSM_Project:war">
+           <settings>
+-            <option name="CONTEXT_PATH" value="/DSSCM_war" />
++            <option name="CONTEXT_PATH" value="/SSM_Project_war" />
+           </settings>
+         </artifact>
+       </deployment>
+@@ -165,6 +177,7 @@
+         <option name="Make" enabled="true" />
+         <option name="BuildArtifacts" enabled="true">
+           <artifact name="DSSCM:war" />
++          <artifact name="SSM_Project:war" />
+         </option>
+       </method>
+     </configuration>
+@@ -172,8 +185,8 @@
+   <component name="SharedIndexes">
+     <attachedChunks>
+       <set>
+-        <option value="bundled-jdk-9823dce3aa75-28b599e66164-intellij.indexing.shared.core-IU-242.23339.11" />
+-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-IU-242.23339.11" />
++        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.19416.15" />
++        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-IU-241.19416.15" />
+       </set>
+     </attachedChunks>
+   </component>
+@@ -191,6 +204,13 @@
+       <workItem from="1746760979658" duration="263000" />
+       <workItem from="1746761251159" duration="582000" />
+       <workItem from="1746761843786" duration="5763000" />
++      <workItem from="1747222869820" duration="5765000" />
++      <workItem from="1747354020302" duration="4623000" />
++      <workItem from="1747360109700" duration="110000" />
++      <workItem from="1747360262988" duration="2604000" />
++      <workItem from="1747995514314" duration="2599000" />
++      <workItem from="1747998275594" duration="496000" />
++      <workItem from="1748004030970" duration="977000" />
+     </task>
+     <task id="LOCAL-00001" summary="first commit">
+       <option name="closed" value="true" />
+Index: .idea/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.gitignore b/.idea/.gitignore
+new file mode 100644
+--- /dev/null	(date 1747222883509)
++++ b/.idea/.gitignore	(date 1747222883509)
+@@ -0,0 +1,8 @@
++# 默认忽略的文件
++/shelf/
++/workspace.xml
++# 基于编辑器的 HTTP 客户端请求
++/httpRequests/
++# Datasource local storage ignored files
++/dataSources/
++/dataSources.local.xml
+Index: .idea/encodings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/encodings.xml b/.idea/encodings.xml
+new file mode 100644
+--- /dev/null	(date 1747223625282)
++++ b/.idea/encodings.xml	(date 1747223625282)
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="Encoding">
++    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
++    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
++  </component>
++</project>
+\ No newline at end of file
